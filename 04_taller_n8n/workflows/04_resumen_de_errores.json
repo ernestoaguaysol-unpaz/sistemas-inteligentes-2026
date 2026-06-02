@@ -1,0 +1,182 @@
+{
+  "name": "04_resumen_de_errores",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6cd0a8c-4a89-4bef-9a15-4924a57cd7e3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "command": "# ls /data/documentos_pdf/\n# tail -n 2 /data/documentos_pdf/resumen.txt\n# tail -n 200  /home/node/.n8n/n8nEventLog.log | grep error\n# tail -n 200 /home/node/.n8n/n8nEventLog.log | grep error | sed 's/[{}]*//g'\n# sed 's/[{}\"]*//g': Elimina llaves y comillas.\n# tr -d '\\n': Elimina saltos de línea para asegurar una sola línea de texto, evitando que fragmentos separados sean malinterpretados.\ntail -n 200 /home/node/.n8n/n8nEventLog.log | grep error | sed 's/[{}\"]*//g' | tr -d '\\n'"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "db5fa8f1-8b15-4e27-80da-ba9ec81420a7",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "chunkingMode": "advanced",
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "Escriba un resumen conciso, contesta en español, de lo siguiente:\n\n\n\"{text}\"\n\n\nRESUMEN CONCISO:",
+              "prompt": "Escriba un resumen conciso, contesta en español, de lo siguiente:\n\n\n\"{text}\"\n\n\nRESUMEN CONCISO:"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "d60ca1d6-848d-499a-aeb3-01f9f5ca2354",
+      "name": "Summarization Chain"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        400,
+        200
+      ],
+      "id": "f7c0b810-ed29-4145-9bc8-d969b0d164df",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "SxF2x4wtl6nuprQX",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "response.text",
+        "options": {
+          "fileName": "resumen_de_errores.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "85c7893c-0b1d-4adc-aabd-0b38318981ae",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/data/bitacora/resumen_de_errores_{{ $now.format('yyyy-MM-dd' )}}.txt",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        0
+      ],
+      "id": "6b4b78f9-da61-45f5-8077-124933bf0cfa",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "9c5cbbfb-93ed-493a-a51d-f2e30d0de0e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  "id": "Fdi6f8amM0i374Jx",
+  "tags": []
+}

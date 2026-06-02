@@ -1,0 +1,472 @@
+{
+  "name": "02_analisis_de_sentimiento",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## NOTA \nFuente https://www.kaggle.com/datasets/columbine/imdb-dataset-sentiment-analysis-in-csv-format/data",
+        "height": 180,
+        "width": 200,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        340
+      ],
+      "typeVersion": 1,
+      "id": "74361cb7-fc0c-46fe-b7b1-37aef0de87ad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json['﻿text'] }}",
+        "options": {
+          "categories": "Positive, Negative",
+          "systemPromptTemplate": "Eres un analizador de sentimientos altamente preciso e inteligente. Analiza el sentimiento del texto proporcionado y clasifícalo en una de las siguientes categorías: {categories}.  \n\nReglas estrictas de formato:  \n- Devuelve únicamente un JSON válido.  \n- No incluyas explicaciones, comentarios ni texto adicional.  \n- No envuelvas la salida en bloques de código.  \nAhora, analiza el texto y devuelve el JSON correspondiente."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1,
+      "position": [
+        60,
+        540
+      ],
+      "id": "ecfba887-acfd-45ed-a69e-56d8a2c4ef7e",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "maxItems": 20
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        540
+      ],
+      "id": "3736320d-6e71-433c-b2a1-b7a6a182e7ca",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        540
+      ],
+      "id": "8c8aecef-64f2-475b-aa0b-326d5ea0ce37",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        540
+      ],
+      "id": "02963f94-aee7-4c6d-b615-2e4e8c35ae66",
+      "name": "Test workflow"
+    },
+    {
+      "parameters": {
+        "content": "Inicia el workflow manualmente al hacer clic en 'Test workflow'.",
+        "height": 280,
+        "width": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -860,
+        440
+      ],
+      "typeVersion": 1,
+      "id": "7d0e0e75-70f8-4cda-a767-3590c99b9d35",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/analisis_sentimientos/*.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        540
+      ],
+      "id": "034f440f-1c87-4122-a553-57d0ba944999",
+      "name": "Leer archivo CSV del Disco"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        540
+      ],
+      "id": "92d159ee-d206-4b4f-9b96-5823d4f02ff3",
+      "name": "Extraer datos del CSV"
+    },
+    {
+      "parameters": {
+        "content": "Extrae datos (texto y etiquetas) de los archivos CSV en formato JSON.",
+        "height": 300,
+        "width": 170
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -420,
+        420
+      ],
+      "typeVersion": 1,
+      "id": "238c95a9-5f1f-4bdc-b25e-8aa02a2a4334",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Limita el procesamiento a un máximo de 1 elementos para pruebas.",
+        "height": 300,
+        "width": 170
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -200,
+        420
+      ],
+      "typeVersion": 1,
+      "id": "780494b5-4810-4026-bdc4-7df0a344a390",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Analiza el sentimiento del texto recibido (de la columna \"text\") y lo clasifica como \"Positive\" o \"Negative\" usando un modelo de lenguaje conectado (\"Ollama Model\"). Devuelve el resultado en formato JSON.",
+        "height": 460,
+        "width": 300,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        40,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "26c36d19-d170-4128-89f8-f99f7143baac",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Convierte los resultados del análisis en un archivo binario llamado 'data'.",
+        "height": 320,
+        "width": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        660,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "8869b312-075b-488f-9a46-0c03635b6090",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/analisis_sentimientos/salida.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        920,
+        540
+      ],
+      "id": "3ee434ea-2009-4e85-a859-b64ec68e12f9",
+      "name": "Guardar archivo en Disco"
+    },
+    {
+      "parameters": {
+        "content": "Guarda los resultados del análisis en '/data/analisis_sentimientos/salida.csv' como CSV.",
+        "height": 320,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        860,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "732d9d01-56aa-49c1-98cc-4897f5f2a792",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el sentimiento del siguiente texto y responde con \"positive\" o \"negative\". Solo responde con una de esas palabras. Texto: {{ $json['﻿text'] }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Analiza el sentimiento del siguiente texto y devuelve un JSON válido con la clave \"SentimentAnalysis\".  \nLa respuesta debe ser un JSON puro, sin explicaciones ni texto adicional.  \n\nEl sentimiento debe ser:\n- \"positive\" si el texto expresa una opinión positiva.\n- \"negative\" si el texto expresa una opinión negativa.\n\nEjemplo de salida correcta:\n{\"SentimentAnalysis\": \"positive\"}\n\nTexto: {{ $json['﻿text'] }}\n\nRecuerda: devuelve solo el JSON y nada más."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0d802884-82cd-44f9-b835-e20357d19a8a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "id": "7c09b3b7-bb84-4853-a9fa-48a9af23b65d",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        140,
+        740
+      ],
+      "id": "24ab9329-4e56-42b9-b0f3-5369a9abf64f",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "SxF2x4wtl6nuprQX",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"SentimentAnalysis\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        220
+      ],
+      "id": "90b6f5c3-0d1e-4d9d-8ac8-18b9b26edae2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        360,
+        0
+      ],
+      "id": "51fb3dff-702f-47bc-8db8-183757c83855",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "content": "Agregar los items de positivo y negativo.",
+        "height": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        400
+      ],
+      "id": "489f87c2-495d-4c98-be56-a30da70a698c",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        460,
+        540
+      ],
+      "id": "e78bc19b-9e89-4aae-a73d-ce4bb289ba67",
+      "name": "Agregar"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agregar",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Guardar archivo en Disco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test workflow": {
+      "main": [
+        [
+          {
+            "node": "Leer archivo CSV del Disco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer archivo CSV del Disco": {
+      "main": [
+        [
+          {
+            "node": "Extraer datos del CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer datos del CSV": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        []
+      ]
+    },
+    "Guardar archivo en Disco": {
+      "main": [
+        []
+      ]
+    },
+    "Agregar": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3231a0da-5552-4bb1-8bc3-28593892d1ec",
+  "meta": {
+    "instanceId": "1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  "id": "cL2xWYguPZoLTSla",
+  "tags": [
+    {
+      "createdAt": "2025-05-21T23:15:04.705Z",
+      "updatedAt": "2025-05-21T23:15:04.705Z",
+      "id": "3jG94418qmNOtDWn",
+      "name": "análisis de sentimiento"
+    }
+  ]
+}

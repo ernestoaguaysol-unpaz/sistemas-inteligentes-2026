@@ -1,0 +1,371 @@
+{
+  "name": "06_resumen_de_noticias",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "👆 Añade aquí las urls de tus canales RSS.",
+        "height": 84,
+        "width": 162,
+        "color": 7
+      },
+      "id": "0e33041b-33b2-4e93-9bf3-5a4bdfb9464f",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        200,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 👨‍🎤 Configuración\n1. Añade tu email y credenciales de email\n2. Añade las URLs de los canales RSS que quieres seguir\n\n\nBasado en: https://n8n.io/workflows/2144-turn-any-rss-feed-into-email/",
+        "height": 225,
+        "width": 387,
+        "color": 5
+      },
+      "id": "9d313f3c-005b-4693-b363-5461ada08eaa",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "5ca45218-566e-4253-9cb2-232b6db77838",
+      "name": "Cada 1 hora",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        20,
+        340
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "257d7e0a-1c6e-42ca-825c-347fec574914",
+              "name": "urls",
+              "type": "array",
+              "value": "[\"https://www.technologyreview.com/topic/artificial-intelligence/feed\", \"https://www.artificial-intelligence.blog/ai-news?format=rss\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "61eac005-ea59-4d38-bb7d-60aaf2451b7e",
+      "name": "Lista de canales RSS",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        240,
+        340
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urls",
+        "options": {}
+      },
+      "id": "ddc014bf-7671-4270-89d0-f7927981edfd",
+      "name": "Split Out (Dividir)",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        460,
+        340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8176ddce-84fa-404d-bf08-4f6053f1a68a",
+      "name": "Loop Over Items (Recorrer elementos)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        660,
+        340
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.urls }}",
+        "options": {}
+      },
+      "id": "c9459384-916b-4b3e-991e-05413d193fc3",
+      "name": "Leer RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        900,
+        360
+      ],
+      "retryOnFail": true,
+      "typeVersion": 1,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "97b4e257-2413-4c78-8b33-1f7523bfe0cd",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              },
+              "leftValue": "={{ DateTime.fromISO($json.isoDate) }}",
+              "rightValue": "={{ DateTime.now().minus({hour: 1}) }}"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "f3e542ca-2875-4a1f-bd26-6f315392cf96",
+      "name": "Si se publica en la última hora",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1140,
+        360
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "sendTo": "ia.test.unpaz@gmail.com",
+        "subject": "=Resumen de noticias - {{$now.format(\"DD\")}}",
+        "message": "={{ $json.response.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "88fc25b1-a31a-4913-aa70-8aa3ec48058f",
+      "name": "Enviar correo electrónico con cada entrada",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1880,
+        340
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "7c675721-92f3-4c20-b39e-c9dba9b5b671",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "v1M0TE4NQbHpiqqK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "36ac30ed-48ce-4e62-b088-89cbbbf18567",
+      "name": "No Operar, no hacer nada",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        920,
+        160
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "=Escriba un resumen conciso en español de lo siguiente:\n\n{{ $json['content:encodedSnippet'] }}\n\nRESUMEN CONCISO: ",
+              "prompt": "=Escriba un resumen conciso en español de lo siguiente:\n\n\n{{ $json['content:encodedSnippet'] }}\n\n\nRESUMEN CONCISO:"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        340
+      ],
+      "id": "4c8e0859-c5ee-482f-a446-73ded2082fea",
+      "name": "Summarization Chain"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        500
+      ],
+      "id": "ca6b9006-18ac-4e31-8379-527c5e83eb7d",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        580
+      ],
+      "id": "ae285d2d-4366-41e0-8b03-51ed18510b17",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "SxF2x4wtl6nuprQX",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cada 1 hora": {
+      "main": [
+        [
+          {
+            "node": "Lista de canales RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista de canales RSS": {
+      "main": [
+        [
+          {
+            "node": "Split Out (Dividir)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out (Dividir)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items (Recorrer elementos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items (Recorrer elementos)": {
+      "main": [
+        [
+          {
+            "node": "No Operar, no hacer nada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Leer RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer RSS": {
+      "main": [
+        [
+          {
+            "node": "Si se publica en la última hora",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items (Recorrer elementos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Si se publica en la última hora": {
+      "main": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Limit": {
+      "main": [
+        []
+      ]
+    },
+    "Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo electrónico con cada entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eac956d9-9a6d-43be-a311-5c3c1f10b96e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  "id": "SRVpLXf6J8xSyfgk",
+  "tags": [
+    {
+      "createdAt": "2025-05-25T22:38:32.273Z",
+      "updatedAt": "2025-05-25T22:38:32.273Z",
+      "id": "y2zNeLvlDG4J19is",
+      "name": "RSS"
+    }
+  ]
+}

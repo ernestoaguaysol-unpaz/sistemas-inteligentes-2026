@@ -1,0 +1,387 @@
+{
+  "name": "05_clasificacion_de_correos",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        260
+      ],
+      "id": "286ae294-5d29-4f88-b993-f9126e37535a",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "v1M0TE4NQbHpiqqK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Clasifica el siguiente correo electrónico en una de las siguientes categorías: ['Trabajo', 'Personal', 'Otro']. Devuelve solo la categoría o las categorías (ya que puede haber más de una categoría) en formato array, sin explicaciones adicionales, no inventes nada."
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        220,
+        260
+      ],
+      "id": "7887e850-12af-42b1-bf46-34fd50f23436",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        300,
+        440
+      ],
+      "id": "3aadf513-ec32-4a00-8d2e-ed1319c2de19",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "SxF2x4wtl6nuprQX",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Gmail Trigger \nEscucha correos nuevos en Gmail cada minuto y envía los datos del correo al siguiente paso.",
+        "height": 340,
+        "width": 220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -60,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "16b8aca3-9daa-4607-a6b8-2a71bc871e4e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Basic LLM Chain \nClasifica el texto del correo en `['Trabajo', 'Personal', 'Otro']` usando un modelo de lenguaje y devuelve las categorías en un array.",
+        "height": 480,
+        "width": 300,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        200,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "ab78ea64-463a-43e4-ba43-4e0d745d0e79",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9280baef-5ddf-4369-a11b-3c01cf9b16fb",
+              "name": "labels",
+              "value": "={{ $json.text }}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        580,
+        260
+      ],
+      "id": "0302140a-afce-47e8-a739-ba4ad0d8fc9b",
+      "name": "Etiquetas"
+    },
+    {
+      "parameters": {
+        "content": "## Etiquetas\nAsigna las categorías clasificadas al campo `labels` como un array y conserva los datos originales.",
+        "height": 340,
+        "width": 180,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        540,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "96eb6f7a-28a4-4bac-b888-f48aa2239a7f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "### Obtener etiquetas de Gmail \nObtiene la lista completa de etiquetas (labels) disponibles en la cuenta de Gmail utilizada.",
+        "height": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        780,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "04820a9f-cf54-48ff-b1b5-08ce5a09072e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\nSepara las categorías del campo `labels` en elementos individuales para procesarlos uno por uno.",
+        "height": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        780,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "ced53e20-58dd-46af-968e-2fcd6f347d25",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "name",
+              "field2": "labels"
+            }
+          ]
+        },
+        "outputDataFrom": "input1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1140,
+        260
+      ],
+      "id": "1ec54670-bb4a-4d29-915c-774b7d90a797",
+      "name": "Merge (Combina las etiquetas)"
+    },
+    {
+      "parameters": {
+        "content": "## Combina las etiquetas\nCombina las etiquetas de Gmail (de \"Gmail\") con las categorías separadas (de \"Split Out\"), emparejándolas por nombre. Esto asegura que cada categoría se asocie con una etiqueta existente en Gmail.",
+        "height": 480,
+        "width": 260,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1060,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "1ef16d03-9fe5-4bc0-ac82-61b9c913d9e7",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        860,
+        120
+      ],
+      "id": "12ae8d19-76d1-4386-8c47-09b6f69ef56c",
+      "name": "Gmail (Obtener etiquetas)",
+      "webhookId": "cf4116ef-e1b2-48ee-a167-58b7b383f7b9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "v1M0TE4NQbHpiqqK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "labels",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        860,
+        420
+      ],
+      "id": "79ee98a8-7ae8-411d-a4d4-cb32c7af1293",
+      "name": "Split Out (Dividir en elementos)"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1420,
+        260
+      ],
+      "id": "c3cdf040-7d1c-418a-83ba-86f9583256b2",
+      "name": "Gmail (Agrega las etiquetas)",
+      "webhookId": "cc441ebd-edc7-492f-b8da-bd4d98e7c390",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "v1M0TE4NQbHpiqqK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Agrega las etiquetas\nAgrega las etiquetas clasificadas al correo original en Gmail usando el ID.",
+        "height": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        100
+      ],
+      "typeVersion": 1,
+      "id": "053017ad-b606-4849-bb66-9a15289f796b",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Etiquetas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Etiquetas": {
+      "main": [
+        [
+          {
+            "node": "Gmail (Obtener etiquetas)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out (Dividir en elementos)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge (Combina las etiquetas)": {
+      "main": [
+        [
+          {
+            "node": "Gmail (Agrega las etiquetas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail (Obtener etiquetas)": {
+      "main": [
+        [
+          {
+            "node": "Merge (Combina las etiquetas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out (Dividir en elementos)": {
+      "main": [
+        [
+          {
+            "node": "Merge (Combina las etiquetas)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "45113b28-01be-44c9-b56e-57eec1063972",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  "id": "JxFrqkVbzxt8cTAu",
+  "tags": [
+    {
+      "createdAt": "2025-05-25T22:00:23.097Z",
+      "updatedAt": "2025-05-25T22:00:23.097Z",
+      "id": "ywiMckytUFtkCbqo",
+      "name": "gmail"
+    }
+  ]
+}

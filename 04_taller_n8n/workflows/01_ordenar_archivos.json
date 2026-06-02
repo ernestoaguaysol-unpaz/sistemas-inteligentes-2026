@@ -1,0 +1,429 @@
+{
+  "name": "01_ordenar_archivos",
+  "nodes": [
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"array\",\n\t\"items\": {\n    \t\"type\": \"object\",\n        \"properties\": {\n          \"folder\": { \"type\": \"string\" },\n          \"files\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" }\n          }\n\t\t}\n    }\n}"
+      },
+      "id": "5b6663ae-1aa0-4ec6-ba00-961605a413d1",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1480,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Paso 1. Seleccione la carpeta de destino\nEn este flujo de trabajo, monitorizaremos una carpeta específica en disco a la que n8n tiene acceso. Dado que estamos utilizando docker, podemos utilizar el volumen n8n o montar una carpeta desde la máquina host.\n\nEl trigger de archivo local es útil para ejecutar el flujo de trabajo cada vez que se realizan cambios en nuestra carpeta de destino.",
+        "height": 501.2939838391483,
+        "width": 483.7926535356806,
+        "color": 7
+      },
+      "id": "4ecd489d-71c1-42d1-b547-b3660e0230bc",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Paso 2. Identificar los archivos que necesitan ser organizados\nPara todos los archivos en nuestra carpeta datos_desordenados seleccionada, queremos que sean ordenados y movidos a subdirectorios categorizados. En este paso, utilizaremos comandos linux para obtener una lista de archivos y carpetas presentes actualmente en la carpeta datos_desordenados.",
+        "height": 391.527066537946,
+        "width": 583.2857596176409,
+        "color": 7
+      },
+      "id": "0ffccdd6-2f3c-40d6-b5cf-9a88c73f9e71",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        520,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Paso 3. Usar AI para organizar nuestra carpeta de destino\nUsando AI como nuestro gestor de archivos, puede ayudarnos a sugerir qué archivos van en qué subdirectorio categorizado. Si el subdirectorio no existe, Nuestro modelo de IA también puede sugerir la creación de uno.",
+        "height": 547,
+        "width": 631,
+        "color": 7
+      },
+      "id": "90d39c6a-6bea-4f12-b22b-ba18c85bb076",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Paso 4. Mover los archivos a subdirectorios\nPara este paso, usaremos el nodo de comando ejecutar para ejecutar un shellscript para mover los archivos a sus respectivos subdirectorios.",
+        "height": 374.8503908496576,
+        "width": 401.0065589583014,
+        "color": 7
+      },
+      "id": "b78cd895-2308-4c03-891c-23f5fa2c6104",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Este flujo de trabajo hace lo siguiente:\n* Supervisa una carpeta en busca de cambios mediante el trigger de archivos local.\n* Identifica todos los archivos y subdirectorios en la carpeta y pasa esto a un LLM.\n* La AI sugiere dónde mover los archivos a qué subdirectorios. También puede sugerir la creación de subdirectorios si no hay ninguno adecuado.\n* Finalmente, tomamos las sugerencias de la IA y realizamos las operaciones de movimiento usando el nodo de comando de ejecución.",
+        "height": 422.70324544339167,
+        "width": 372.51107341403605
+      },
+      "id": "f3a55ea8-f50d-4032-aa96-b4074e079ef2",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### 🚨 ¡Advertencia! ¡Operaciones potencialmente destructivas!\nEste flujo de trabajo manipula el sistema de archivos. Hacer siempre copias de seguridad de los archivos antes de ejecutar flujos de trabajo locales.",
+        "height": 118,
+        "width": 438,
+        "color": 3
+      },
+      "id": "38156dc7-3175-47d6-bd26-0ae4c1ef4141",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1:8b",
+        "options": {}
+      },
+      "id": "a8789f5a-bffe-447a-ad57-e375c0735e4b",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        460
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "SxF2x4wtl6nuprQX",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerOn": "folder",
+        "path": "/data/datos_desordenados",
+        "events": [
+          "add"
+        ],
+        "options": {
+          "awaitWriteFinish": true
+        }
+      },
+      "id": "c12d7362-27ff-48dc-a9ed-761c0c2fc39b",
+      "name": "Monitoreo carpeta",
+      "type": "n8n-nodes-base.localFileTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35ea70c4-8669-4975-a68d-bbaa094713c0",
+              "name": "directorio_monitoreado",
+              "value": "={{ $('Monitoreo carpeta').params.path }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16ef145b-f5f3-4ecc-a5ab-957cd3ee7fb4",
+      "name": "Set variable directorio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=ls -p {{ $json.directorio_monitoreado }} | grep -v / || true; \\\necho \"===\"; \\\nls -p {{ $json.directorio_monitoreado }} | grep / || true;"
+      },
+      "id": "85b5a504-8078-41dd-89cb-be835d966bf9",
+      "name": "Obtener archivos y carpetas",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        580,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad893795-cae8-4418-99e0-2c68126337d3",
+              "name": "archivos",
+              "value": "={{ $json.stdout.split('===')[0].split('\\n').filter(item => !item.endsWith('Zone.Identifier')).compact() }}",
+              "type": "array"
+            },
+            {
+              "id": "0e7e8571-6b86-481d-a20c-3a7c621c562f",
+              "name": "carpetas",
+              "value": "={{ $json.stdout.split('===')[1].split('\\n').compact() }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20d229e5-9650-4282-b9b1-430cd7787727",
+      "name": "Convertir archivos y carpetas a Array",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "9be5a175-e7aa-4d68-9ddc-8b43b43e2d37",
+              "leftValue": "={{ $json.archivos }}",
+              "rightValue": "={{ 1 }}",
+              "operator": {
+                "type": "array",
+                "operation": "lengthGte",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ced4a19a-2b07-4765-8e6d-ad7803069d3b",
+      "name": "If Si tiene archivos...",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the list of current files in the directory:\n{{ $json.archivos.map(archivo => `* ${archivo}`).join('\\n') }}\n\nHere is the list of current folders in the directory:\n{{ $json.carpetas.length ? $json.carpetas.map(item => `* ${item}`).join('\\n') : 'There are currently no directories' }}\n\nGroup the current files using the filename as a hint and decide which of the current folders should they be moved to. Please consider name of the files and their extension to suggests a folder. If there are no current folders, then suggest a folder to be created.\n\nIf you can't decide which folder to put the file in, the file should be moved to the misc folder. Always the output must show to what folder move the file, so folder field cannot be empty (as specified, if none of folders match a good criteria to put the file, suggest a new folder name to be created, and if you can't suggest then assign file to \"misc\" folder). All files with office like extension (.docx, .odt, .ods, and another document formats) must go to \"documents\" folder.\n\noutput example:\n{\n\"folder\": \"photos\",\n\"files\": [\n\"foto.jpg\",\n\"photo_vacations.jpg\"\n],\n{\n\"folder\": \"home\",\n\"files\": [\n\"mydog.jpg\",\n\"taxes.pdf\"\n],\n}\n\n **IMPORTANT**:\n1. The folder name must be a simple string, not a path, not \"/\" simbols. Some of the list, a new folder name, or \"misc\".\n2. **Do not** include any extra explanations or text.\n3. **Do not** wrap the JSON in markdown (```json).\n4. Your response **must be valid JSON**.\nNow, provide the JSON response.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You manage a linux directory on behalf of the user."
+            }
+          ]
+        }
+      },
+      "id": "35f5b49b-bc20-4e58-a9f6-34325e42714b",
+      "name": "Gestor de archivos AI",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1240,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "id": "1715386f-3a4d-41f1-8d42-ad06d56717e7",
+      "name": "Obtener sugerencias para listar",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=directorio=\"{{ $('Set variable directorio').item.json.directorio_monitoreado }}\"\nsubdirectorio=\"$directorio/{{ $json.folder }}\";\nlista_archivos=\"{{ $json.files.join(' ') }}\";\n\n# crear subdirectorio si no existe\nmkdir -p $subdirectorio;\n\n# para cada sugerencia, mueva el archivo al subdirectorio.\n# Si el archivo en el subdirectorio existe, entonces renombraremos el archivo actual añadiendo una pequeña cadena aleatoria al final del nombre del archivo.\nfor nombre_archivo in $lista_archivos; do\n    if [ -e \"$subdirectorio/$nombre_archivo\" ]; then\n        mv \"$directorio/$nombre_archivo-$RANDOM\" -t $subdirectorio;\n    else\n        mv \"$directorio/$nombre_archivo\" -t $subdirectorio;\n    fi\ndone"
+      },
+      "id": "71be4c13-a2c9-40df-ac11-28af945e100b",
+      "name": "Mover archivos a carpetas",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1940,
+        320
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Gestor de archivos AI",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gestor de archivos AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monitoreo carpeta": {
+      "main": [
+        [
+          {
+            "node": "Set variable directorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set variable directorio": {
+      "main": [
+        [
+          {
+            "node": "Obtener archivos y carpetas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener archivos y carpetas": {
+      "main": [
+        [
+          {
+            "node": "Convertir archivos y carpetas a Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir archivos y carpetas a Array": {
+      "main": [
+        [
+          {
+            "node": "If Si tiene archivos...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Si tiene archivos...": {
+      "main": [
+        [
+          {
+            "node": "Gestor de archivos AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gestor de archivos AI": {
+      "main": [
+        [
+          {
+            "node": "Obtener sugerencias para listar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener sugerencias para listar": {
+      "main": [
+        [
+          {
+            "node": "Mover archivos a carpetas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4011f0e5-5402-4e43-a17d-4456ad20bea4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  "id": "tJyx30fKqLtlUncu",
+  "tags": [
+    {
+      "createdAt": "2025-05-16T03:08:05.569Z",
+      "updatedAt": "2025-05-16T03:08:05.569Z",
+      "id": "m5vUlfjO72ygmq1J",
+      "name": "archivos"
+    },
+    {
+      "createdAt": "2025-05-16T03:08:05.586Z",
+      "updatedAt": "2025-05-16T03:08:05.586Z",
+      "id": "IlSzZ5bC61L5uw2i",
+      "name": "ordenar"
+    }
+  ]
+}
